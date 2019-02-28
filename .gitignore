@@ -1,5 +1,5 @@
 .DS_store
 .vscode/
 node_modules/
-cookies/
+cookies/cookies.txt
 creds.js

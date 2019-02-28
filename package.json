@@ -8,5 +8,6 @@
   "private": false,
   "dependencies": {
     "puppeteer": "^1.12.2"
-  }
+  },
+  "repository": "git@github.com:Nick-Trahan/backorderScraper.git"
 }
