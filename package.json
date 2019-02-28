@@ -1,0 +1,12 @@
+{
+  "name": "backorderscraper",
+  "version": "0.0.1",
+  "description": "A tool that will scrape backorder information from HyundaiDealer.com and use that data to update a report given to the service advisors each morning.",
+  "main": "index.js",
+  "author": "Nick Trahan",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "puppeteer": "^1.12.2"
+  }
+}

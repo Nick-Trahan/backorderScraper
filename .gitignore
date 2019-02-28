@@ -1,0 +1,5 @@
+.DS_store
+.vscode/
+node_modules/
+cookies/
+creds.js
