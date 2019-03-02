@@ -11,8 +11,11 @@ const WEB_DCS =
 
 (async () => {
   // Initiate the Puppeteer browser
-  const browser = await puppeteer.launch(/*{ headless: false }*/);
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
+
+  // TODO: Removing this breaks the xvorStatus function somehow. Studying up on how this works.
+  await page.setViewport({ width: 1200, height: 720 });
 
   // Go to the webpage and wait for it to load
   await page.goto(HYUNDAI_DEALER_LOGIN, { waitUntil: 'networkidle2' });
