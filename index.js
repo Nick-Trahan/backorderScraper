@@ -54,6 +54,23 @@ const WEB_DCS =
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
   await page.goto(WEB_DCS, { waitUntil: 'networkidle2' });
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
+  await page.waitFor(3000);
+  await page.select('#gridlistbackorder_length > label > select', '100');
+
+  const amountOfBackorders = await page.evaluate(() => {
+    const resultText = document.querySelector('#printAreaDiv > article > div > div > div > header > h1').innerText;
+    const resultNumber = Number(resultText.substring(16));
+
+    return {
+      resultNumber,
+    }
+  });
+  console.log(amountOfBackorders);
+
+  // let /*NAME*/ = await page.evaluate((sel) =>{
+  //   return document.getElementsByClassName(sel).length;
+  // }, /*SELECTOR*/)
 
   // End session
   await browser.close();
