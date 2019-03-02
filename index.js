@@ -11,10 +11,8 @@ const WEB_DCS =
 
 (async () => {
   // Initiate the Puppeteer browser
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch(/*{ headless: false }*/);
   const page = await browser.newPage();
-
-  await page.setViewport({ width: 1200, height: 720 });
 
   // Go to the webpage and wait for it to load
   await page.goto(HYUNDAI_DEALER_LOGIN, { waitUntil: 'networkidle2' });
@@ -62,16 +60,57 @@ const WEB_DCS =
     const resultText = document.querySelector('#printAreaDiv > article > div > div > div > header > h1').innerText;
     const resultNumber = Number(resultText.substring(16));
 
-    return {
-      resultNumber,
-    }
+    return resultNumber;
   });
-  console.log(amountOfBackorders);
 
-  // let /*NAME*/ = await page.evaluate((sel) =>{
-  //   return document.getElementsByClassName(sel).length;
-  // }, /*SELECTOR*/)
+  const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
+  const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
+  const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
 
+  for (let i = 1; i <= amountOfBackorders; i++) {
+    let orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
+    let partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
+    let xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
+
+    let orderNumbers = await page.evaluate((sel) => {
+      let storeIndicatorString = document.querySelector(sel).innerText;
+      let firstTwo = storeIndicatorString.substring(0, 2);
+
+      if(firstTwo === 'H0' || firstTwo === 'H1') {
+        return storeIndicatorString;
+      } else {
+        return 'Warehouse Order';
+      }
+    }, orderNumberSelector);
+
+    let partNumbers = await page.evaluate((sel) => {
+      let backorderedPart = document.querySelector(sel).innerText;
+      return backorderedPart;
+    }, partNumberSelector);
+
+    let xvorStatus = await page.evaluate((sel) => {
+      let statusIndicator = document.querySelector(sel);
+      let elementText = '';
+      (statusIndicator) ? elementText = statusIndicator.innerText : elementText = 'N/A';
+
+      if(elementText === 'XVOR') {
+        return 'Yes';
+      } else if(elementText === 'N/A') {
+        return 'N/A';
+      } else {
+        return 'No';
+      }
+    }, xvorStatusSelector);
+
+    let relevantOrders = {
+      partNumber: partNumbers,
+      orderNumber: orderNumbers,
+      upgraded: xvorStatus,
+    };
+    if(relevantOrders.orderNumber !=='Warehouse Order') {
+      console.log(relevantOrders);
+    }
+   }
   // End session
   await browser.close();
 })();
