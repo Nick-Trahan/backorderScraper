@@ -70,11 +70,13 @@ const WEB_DCS =
   const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
   const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
   const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
+  const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a'
   
   for (let i = 1; i <= amountOfBackorders; i++) {
     let orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
     let partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
     let xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
+    let detailsLinkSelector = DETAILS_LINK_SELECTOR_PATH.replace('INDEX', i);
 
     /**
      * 'storeIndicatorString' refers to the first two characters on the order 
@@ -116,11 +118,21 @@ const WEB_DCS =
       }
     }, xvorStatusSelector);
 
-    /** Return only the information relevant to the report.*/
+    let orderDetails = await page.evaluate((sel) => {
+      const detailsIndicator = document.querySelector(sel);
+      if(detailsIndicator) {
+        return 'YES';
+      } else {
+        return 'N/A';
+      }
+    }, detailsLinkSelector);
+
+    // Return only the information relevant to the report.
     let relevantOrders = {
       partNumber: partNumbers,
       orderNumber: orderNumbers,
       upgraded: xvorStatus,
+      details: orderDetails,
     };
     if(relevantOrders.orderNumber !=='Warehouse Order') {
       console.log(relevantOrders);
