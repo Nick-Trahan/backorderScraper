@@ -73,10 +73,10 @@ const WEB_DCS =
   const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a'
   
   for (let i = 1; i <= amountOfBackorders; i++) {
-    let orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
-    let partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
-    let xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
-    let detailsLinkSelector = DETAILS_LINK_SELECTOR_PATH.replace('INDEX', i);
+    const orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
+    const partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
+    const xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
+    const detailsLinkSelector = DETAILS_LINK_SELECTOR_PATH.replace('INDEX', i);
 
     /**
      * 'storeIndicatorString' refers to the first two characters on the order 
@@ -84,9 +84,9 @@ const WEB_DCS =
      * (the dealership), while anything else indicates the order was placed by
      * our wholesale division or was forced out by Hyundai.
      */
-    let orderNumbers = await page.evaluate((sel) => {
-      let storeIndicatorString = document.querySelector(sel).innerText;
-      let firstTwo = storeIndicatorString.substring(0, 2);
+    const orderNumbers = await page.evaluate((sel) => {
+      const storeIndicatorString = document.querySelector(sel).innerText;
+      const firstTwo = storeIndicatorString.substring(0, 2);
 
       if(firstTwo === 'H0' || firstTwo === 'H1') {
         return storeIndicatorString;
@@ -95,8 +95,8 @@ const WEB_DCS =
       }
     }, orderNumberSelector);
 
-    let partNumbers = await page.evaluate((sel) => {
-      let backorderedPart = document.querySelector(sel).innerText;
+    const partNumbers = await page.evaluate((sel) => {
+      const backorderedPart = document.querySelector(sel).innerText;
       return backorderedPart;
     }, partNumberSelector);
 
@@ -104,8 +104,8 @@ const WEB_DCS =
      * This is to check if a part is eligible to be upgraded to XVOR
      * (eXpedite Vehicle Off-road) and its upgrade status.
      */
-    let xvorStatus = await page.evaluate((sel) => {
-      let statusIndicator = document.querySelector(sel);
+    const xvorStatus = await page.evaluate((sel) => {
+      const statusIndicator = document.querySelector(sel);
       let elementText = '';
       (statusIndicator) ? elementText = statusIndicator.innerText : elementText = 'N/A';
 
@@ -128,12 +128,13 @@ const WEB_DCS =
     }, detailsLinkSelector);
 
     // Return only the information relevant to the report.
-    let relevantOrders = {
+    const relevantOrders = {
       partNumber: partNumbers,
       orderNumber: orderNumbers,
       upgraded: xvorStatus,
       details: orderDetails,
     };
+
     if(relevantOrders.orderNumber !=='Warehouse Order') {
       console.log(relevantOrders);
     }
