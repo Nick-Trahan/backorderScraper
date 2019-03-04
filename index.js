@@ -59,22 +59,29 @@ const WEB_DCS =
   await page.waitFor(3000);
   await page.select('#gridlistbackorder_length > label > select', '100');
 
+  // Check total amount of backorders
   const amountOfBackorders = await page.evaluate(() => {
     const resultText = document.querySelector('#printAreaDiv > article > div > div > div > header > h1').innerText;
     const resultNumber = Number(resultText.substring(16));
 
     return resultNumber;
   });
-
+  
   const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
   const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
   const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
-
+  
   for (let i = 1; i <= amountOfBackorders; i++) {
     let orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
     let partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
     let xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
 
+    /**
+     * 'storeIndicatorString' refers to the first two characters on the order 
+     * number. H0 and H1 would mean the order originated from my store
+     * (the dealership), while anything else indicates the order was placed by
+     * our wholesale division or was forced out by Hyundai.
+     */
     let orderNumbers = await page.evaluate((sel) => {
       let storeIndicatorString = document.querySelector(sel).innerText;
       let firstTwo = storeIndicatorString.substring(0, 2);
@@ -91,6 +98,10 @@ const WEB_DCS =
       return backorderedPart;
     }, partNumberSelector);
 
+    /**
+     * This is to check if a part is eligible to be upgraded to XVOR
+     * (eXpedite Vehicle Off-road) and its upgrade status.
+     */
     let xvorStatus = await page.evaluate((sel) => {
       let statusIndicator = document.querySelector(sel);
       let elementText = '';
@@ -105,6 +116,7 @@ const WEB_DCS =
       }
     }, xvorStatusSelector);
 
+    /** Return only the information relevant to the report.*/
     let relevantOrders = {
       partNumber: partNumbers,
       orderNumber: orderNumbers,
