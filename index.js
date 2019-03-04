@@ -70,7 +70,7 @@ const WEB_DCS =
   const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
   const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
   const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
-  const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a'
+  const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a';
   
   for (let i = 1; i <= amountOfBackorders; i++) {
     const orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
@@ -102,7 +102,7 @@ const WEB_DCS =
 
     /**
      * This is to check if a part is eligible to be upgraded to XVOR
-     * (eXpedite Vehicle Off-road) and its upgrade status.
+     * (eXpedite, Vehicle Off-road) and its upgrade status.
      */
     const xvorStatus = await page.evaluate((sel) => {
       const statusIndicator = document.querySelector(sel);
@@ -118,7 +118,7 @@ const WEB_DCS =
       }
     }, xvorStatusSelector);
 
-    let orderDetails = await page.evaluate((sel) => {
+    const checkOrderDetails = await page.evaluate((sel) => {
       const detailsIndicator = document.querySelector(sel);
       if(detailsIndicator) {
         return 'YES';
@@ -127,12 +127,35 @@ const WEB_DCS =
       }
     }, detailsLinkSelector);
 
+    if(checkOrderDetails === 'YES') {
+      await page.click(detailsLinkSelector);
+      await page.waitForSelector('#parts_dialog_backorder_eta');
+    }
+    
+    await page.waitFor(3000);
+    
+    const pullOrderDetails = await page.evaluate(async () => {
+      const detailsText = await document.querySelector('#DataTables_Table_1 > tbody > tr > td.mn-width-200.data-align-left');
+      let etaDetails = '';
+ 
+      if(!detailsText) {
+        etaDetails = 'N/A';
+      } else {
+       etaDetails = detailsText.innerText;
+      }
+ 
+      return etaDetails;
+     });
+
+    await page.click('#parts_dialog_backorder_eta > div > div > div.modal-header > button > span');
+    await page.waitFor(3000);
+
     // Return only the information relevant to the report.
     const relevantOrders = {
       partNumber: partNumbers,
       orderNumber: orderNumbers,
       upgraded: xvorStatus,
-      details: orderDetails,
+      details: pullOrderDetails,
     };
 
     if(relevantOrders.orderNumber !=='Warehouse Order') {
@@ -140,5 +163,6 @@ const WEB_DCS =
     }
    }
   // End session
+  await page.waitForNavigation({ waitUntil: 'networkidle2' });
   await browser.close();
 })();
