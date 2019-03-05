@@ -118,44 +118,41 @@ const WEB_DCS =
       }
     }, xvorStatusSelector);
 
-    const checkOrderDetails = await page.evaluate((sel) => {
+    const checkOrderDetails = await page.evaluate(async (sel) => {
       const detailsIndicator = document.querySelector(sel);
+      const modalExit = document.querySelector('#parts_dialog_backorder_eta > div > div > div.modal-header > button > span');
+      
       if(detailsIndicator) {
-        return 'YES';
+        detailsIndicator.click();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        
+        const detailsField = document.querySelector('#DataTables_Table_0 > tbody > tr > td.mn-width-200.data-align-left');
+        let etaDetails = '';
+ 
+        if(detailsField.innerText === '') {
+          etaDetails = 'BLANK';
+        } else {
+          etaDetails = detailsField.innerText;
+        }
+      
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await modalExit.click();
+
+        return etaDetails;
+
       } else {
-        return 'N/A';
+        return 'NONE';
       }
     }, detailsLinkSelector);
 
-    if(checkOrderDetails === 'YES') {
-      await page.click(detailsLinkSelector);
-      await page.waitForSelector('#parts_dialog_backorder_eta');
-    }
-    
-    await page.waitFor(3000);
-    
-    const pullOrderDetails = await page.evaluate(async () => {
-      const detailsText = await document.querySelector('#DataTables_Table_1 > tbody > tr > td.mn-width-200.data-align-left');
-      let etaDetails = '';
- 
-      if(!detailsText) {
-        etaDetails = 'N/A';
-      } else {
-       etaDetails = detailsText.innerText;
-      }
- 
-      return etaDetails;
-     });
-
-    await page.click('#parts_dialog_backorder_eta > div > div > div.modal-header > button > span');
-    await page.waitFor(3000);
+    await page.waitFor(2000);
 
     // Return only the information relevant to the report.
     const relevantOrders = {
       partNumber: partNumbers,
       orderNumber: orderNumbers,
       upgraded: xvorStatus,
-      details: pullOrderDetails,
+      details: checkOrderDetails,
     };
 
     if(relevantOrders.orderNumber !=='Warehouse Order') {
@@ -163,6 +160,5 @@ const WEB_DCS =
     }
    }
   // End session
-  await page.waitForNavigation({ waitUntil: 'networkidle2' });
   await browser.close();
 })();
