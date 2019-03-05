@@ -49,12 +49,11 @@ const WEB_DCS =
       }
       console.log('Session has been loaded in the browser')
     }
-  } else {
+  }
   // Writing cookies
   const cookies = await page.cookies();
   fs.writeFileSync(cookiesPath, JSON.stringify(cookies));
   console.log(`Session has been saved to ${cookiesPath}`);
-  }
 
   // Get to WebDCS and wait for it to load
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
