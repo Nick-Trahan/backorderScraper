@@ -23,6 +23,7 @@ const WEB_DCS =
   await page.setViewport({ width: 1200, height: 720 });
 
   // Go to the webpage and wait for it to load
+  console.log('Logging into HyundaiDealer.com');
   await page.goto(HYUNDAI_DEALER_LOGIN, { waitUntil: 'networkidle2' });
 
   // Log into website
@@ -57,13 +58,16 @@ const WEB_DCS =
 
   // Get to WebDCS and wait for it to load
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  console.log('Entering WebDCS...(Be patient, this may take a while)');
   await page.goto(WEB_DCS, { waitUntil: 'networkidle2' });
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  console.log('WebDCS loaded!');
   await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
   await page.waitFor(3000);
   await page.select('#gridlistbackorder_length > label > select', '100');
 
   // Check total amount of backorders
+  console.log("Retrieving backorders...(This also takes a while. You'll be returned to the command prompt when it's done)");
   const amountOfBackorders = await page.evaluate(() => {
     const resultText = document.querySelector('#printAreaDiv > article > div > div > div > header > h1').innerText;
     const resultNumber = Number(resultText.substring(16));
