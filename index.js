@@ -11,10 +11,15 @@ const WEB_DCS =
 
 (async () => {
   // Initiate the Puppeteer browser
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  // TODO: Removing this breaks the xvorStatus function somehow. Studying up on how this works.
+  /**
+   *  The viewport must be set, even in headless mode, due to the responsive
+   *  design of the website. The default viewport will cause you to get the
+   *  mobile version of the site, which would require many more 'click' 
+   *  actions to get to the revelant info.
+   */
   await page.setViewport({ width: 1200, height: 720 });
 
   // Go to the webpage and wait for it to load
