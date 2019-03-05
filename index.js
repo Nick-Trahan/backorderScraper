@@ -15,10 +15,10 @@ const WEB_DCS =
   const page = await browser.newPage();
 
   /**
-   *  The viewport must be set, even in headless mode, due to the responsive
-   *  design of the website. The default viewport will cause you to get the
-   *  mobile version of the site, which would require many more 'click' 
-   *  actions to get to the revelant info.
+   * The viewport must be set, even in headless mode, due to the responsive
+   * design of the website. The default viewport will cause you to get the
+   * mobile version of the site, which would require many more 'click' 
+   * actions to get to the revelant info.
    */
   await page.setViewport({ width: 1200, height: 720 });
 
@@ -129,7 +129,11 @@ const WEB_DCS =
     const checkOrderDetails = await page.evaluate(async (sel) => {
       const detailsIndicator = document.querySelector(sel);
       const modalExit = document.querySelector('#parts_dialog_backorder_eta > div > div > div.modal-header > button > span');
-      
+      /**
+       * The information we're after is located within a pop-up modal, so this
+       * block will click the details link, pull the needed info, then close
+       * the modal window.
+       */
       if(detailsIndicator) {
         detailsIndicator.click();
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -137,6 +141,7 @@ const WEB_DCS =
         const detailsField = document.querySelector('#DataTables_Table_0 > tbody > tr > td.mn-width-200.data-align-left');
         let etaDetails = '';
  
+        //Sometimes, the details field is empty, so this will account for that.
         if(detailsField.innerText === '') {
           etaDetails = 'BLANK';
         } else {
@@ -148,6 +153,10 @@ const WEB_DCS =
 
         return etaDetails;
 
+        /** 
+         * If a details link doesn't exist, the function returns NONE and
+         * moves on.
+         */
       } else {
         return 'NONE';
       }
