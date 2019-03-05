@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer');
 const CREDS = require('./creds');
 const fs = require('fs');
+const mongoose = require('mongoose');
+const Order = require('./models/orders');
 
 const HYUNDAI_DEALER_LOGIN =
 'https://wdcs.hyundaidealer.com/irj/portal/iam?TargetSYS_ID=SYS0000';
