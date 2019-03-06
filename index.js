@@ -19,8 +19,8 @@ const WEB_DCS =
   /**
    * The viewport must be set, even in headless mode, due to the responsive
    * design of the website. The default viewport will cause you to get the
-   * mobile version of the site, which would require many more 'click' 
-   * actions to get to the revelant info.
+   * mobile version of the site, which would require many more 'click'
+   * actions to get to the relevant info.
    */
   await page.setViewport({ width: 1200, height: 720 });
 
@@ -76,12 +76,12 @@ const WEB_DCS =
 
     return resultNumber;
   });
-  
+
   const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
   const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
   const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
   const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a';
-  
+
   for (let i = 1; i <= amountOfBackorders; i++) {
     const orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
     const partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
@@ -89,7 +89,7 @@ const WEB_DCS =
     const detailsLinkSelector = DETAILS_LINK_SELECTOR_PATH.replace('INDEX', i);
 
     /**
-     * 'storeIndicatorString' refers to the first two characters on the order 
+     * 'storeIndicatorString' refers to the first two characters on the order
      * number. H0 and H1 would mean the order originated from my store
      * (the dealership), while anything else indicates the order was placed by
      * our wholesale division or was forced out by Hyundai.
@@ -139,23 +139,23 @@ const WEB_DCS =
       if(detailsIndicator) {
         detailsIndicator.click();
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        
+
         const detailsField = document.querySelector('#DataTables_Table_0 > tbody > tr > td.mn-width-200.data-align-left');
         let etaDetails = '';
- 
-        //Sometimes, the details field is empty, so this will account for that.
+
+        // Sometimes, the details field is empty, so this will account for that.
         if(detailsField.innerText === '') {
           etaDetails = 'BLANK';
         } else {
           etaDetails = detailsField.innerText;
         }
-      
+
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await modalExit.click();
 
         return etaDetails;
 
-        /** 
+        /**
          * If a details link doesn't exist, the function returns NONE and
          * moves on.
          */
@@ -176,8 +176,38 @@ const WEB_DCS =
 
     if(relevantOrders.orderNumber !=='Warehouse Order') {
       console.log(relevantOrders);
+      upsertOrder({
+        partNumber: relevantOrders.partNumber,
+        orderNumber: relevantOrders.orderNumber,
+        upgraded: relevantOrders.upgraded,
+        details: relevantOrders.details,
+        dateCrawled: new Date(),
+      });
     }
    }
   // End session
   await browser.close();
+  mongoose.connection.close();
 })();
+
+function upsertOrder(orderObject) {
+  const DB_URL = 'mongodb://localhost/backorderScraper';
+
+  if(mongoose.connection.readyState === 0) {
+    mongoose.connect(DB_URL, { useNewUrlParser: true, useFindAndModify: false });
+  }
+
+  const conditions = { partNumber: orderObject.partNumber, orderNumber: orderObject.orderNumber };
+  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+  Order.findOneAndUpdate(conditions, orderObject, options, (err, result) => {
+    if(err) throw err;
+  });
+}
+
+
+/**
+ * Thanks to emadehsan (https://github.com/emadehsan) for writing such an
+ * excellent guide for first timers using puppeteer for web scraping!
+ * https://github.com/emadehsan/thal/blob/master/README.md
+ */
