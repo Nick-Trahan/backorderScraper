@@ -5,7 +5,8 @@ let orderSchema = new mongoose.Schema({
   orderNumber: String,
   upgraded: String,
   details: String,
-  dateCrawled: Date,
+},{
+  timestamps: true,
 });
 
 let Order = mongoose.model('Order', orderSchema);

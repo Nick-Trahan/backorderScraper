@@ -1,8 +1,9 @@
 const puppeteer = require('puppeteer');
 const CREDS = require('./creds');
+const CONFIG = require('./config.js');
+const Order = require('./models/orders');
 const fs = require('fs');
 const mongoose = require('mongoose');
-const Order = require('./models/orders');
 
 const HYUNDAI_DEALER_LOGIN =
 'https://wdcs.hyundaidealer.com/irj/portal/iam?TargetSYS_ID=SYS0000';
@@ -13,7 +14,7 @@ const WEB_DCS =
 
 (async () => {
   // Initiate the Puppeteer browser
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({headless: false});
   const page = await browser.newPage();
 
   /**
@@ -63,6 +64,7 @@ const WEB_DCS =
   console.log('Entering WebDCS...(Be patient, this may take a while)');
   await page.goto(WEB_DCS, { waitUntil: 'networkidle2' });
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  // await page.waitFor(3000);
   console.log('WebDCS loaded!');
   await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
   await page.waitFor(3000);
@@ -181,7 +183,6 @@ const WEB_DCS =
         orderNumber: relevantOrders.orderNumber,
         upgraded: relevantOrders.upgraded,
         details: relevantOrders.details,
-        dateCrawled: new Date(),
       });
     }
    }
@@ -191,12 +192,6 @@ const WEB_DCS =
 })();
 
 function upsertOrder(orderObject) {
-  const DB_URL = 'mongodb://localhost/backorderScraper';
-
-  if(mongoose.connection.readyState === 0) {
-    mongoose.connect(DB_URL, { useNewUrlParser: true, useFindAndModify: false });
-  }
-
   const conditions = { partNumber: orderObject.partNumber, orderNumber: orderObject.orderNumber };
   const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
@@ -205,9 +200,13 @@ function upsertOrder(orderObject) {
   });
 }
 
-
 /**
  * Thanks to emadehsan (https://github.com/emadehsan) for writing such an
  * excellent guide for first timers using puppeteer for web scraping!
  * https://github.com/emadehsan/thal/blob/master/README.md
  */
+
+ /**
+  * https://zellwk.com/blog/crud-express-mongodb/
+  * https://www.zeptobook.com/how-to-create-restful-crud-api-with-node-js-mongodb-and-express-js/
+  */
