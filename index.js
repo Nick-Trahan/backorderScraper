@@ -216,6 +216,7 @@ function upsertOrder(orderObject) {
   */
 
   /**
-   * TODO: Sometimes, the script will exit with no errors before checking any orders.
-   * This usually happends after I empty the db while testing someting else. 
+   * TODO: Sometimes, the script will exit with no errors before checking any
+   * orders. This usually happens after I empty the db while testing something
+   * else.
    */

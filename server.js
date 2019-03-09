@@ -33,4 +33,4 @@ app.get('/', (req, res) => {
       if(err) return console.log(err);
       res.render('index.ejs', {backorders});
   });
-})
+});
