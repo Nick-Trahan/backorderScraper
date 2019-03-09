@@ -7,6 +7,7 @@ let orderSchema = new mongoose.Schema({
   details: String,
 },{
   timestamps: true,
+  //TODO: learn more about mongoose timestamps
 });
 
 let Order = mongoose.model('Order', orderSchema);

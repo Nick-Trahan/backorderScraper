@@ -14,7 +14,7 @@ const WEB_DCS =
 
 (async () => {
   // Initiate the Puppeteer browser
-  const browser = await puppeteer.launch({headless: false});
+  const browser = await puppeteer.launch(/*{headless: false}*/);
   const page = await browser.newPage();
 
   /**
@@ -64,7 +64,6 @@ const WEB_DCS =
   console.log('Entering WebDCS...(Be patient, this may take a while)');
   await page.goto(WEB_DCS, { waitUntil: 'networkidle2' });
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
-  // await page.waitFor(3000);
   console.log('WebDCS loaded!');
   await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
   await page.waitFor(3000);
@@ -192,6 +191,11 @@ const WEB_DCS =
 })();
 
 function upsertOrder(orderObject) {
+  //TODO: This should probably come from the server file
+  if(mongoose.connection.readyState === 0) {
+    mongoose.connect(CONFIG.DB_URL, { useNewUrlParser: true, useFindAndModify: false });
+  }
+
   const conditions = { partNumber: orderObject.partNumber, orderNumber: orderObject.orderNumber };
   const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
@@ -210,3 +214,8 @@ function upsertOrder(orderObject) {
   * https://zellwk.com/blog/crud-express-mongodb/
   * https://www.zeptobook.com/how-to-create-restful-crud-api-with-node-js-mongodb-and-express-js/
   */
+
+  /**
+   * TODO: Sometimes, the script will exit before checking any orders.
+   * This usually happends after I empty the db while testing someting else. 
+   */
