@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.86,
+        maximum-scale=3.0, minimum-scale=0.86, viewport-fit=cover">
+  <title>AS Hyundai Backorders</title>
+  <!-- <link rel="stylesheet" type="text/css" href="normalize.css"> -->
+</head>
+<body>
+  <ul class="backorders">
+    <% for(let i=0; i < backorders.length; i++) {%>
+    <li class="order">
+      <p>Part Number: <%= backorders[i].partNumber %></p>
+      <p>Order Number: <%= backorders[i].orderNumber %></p>
+      <p>Upgraded?: <%= backorders[i].upgraded %></p>
+      <p>Note from Hyundai: <%= backorders[i].details %></p>
+    </li>
+    <% } %>
+  </ul>
+  <!-- <script src="script.js"></script> -->
+</body>
+</html>

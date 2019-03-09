@@ -146,7 +146,7 @@ const WEB_DCS =
 
         // Sometimes, the details field is empty, so this will account for that.
         if(detailsField.innerText === '') {
-          etaDetails = 'BLANK';
+          etaDetails = 'NONE';
         } else {
           etaDetails = detailsField.innerText;
         }
@@ -176,7 +176,7 @@ const WEB_DCS =
     };
 
     if(relevantOrders.orderNumber !=='Warehouse Order') {
-      console.log(relevantOrders);
+      //console.log(relevantOrders);
       upsertOrder({
         partNumber: relevantOrders.partNumber,
         orderNumber: relevantOrders.orderNumber,
@@ -216,6 +216,6 @@ function upsertOrder(orderObject) {
   */
 
   /**
-   * TODO: Sometimes, the script will exit before checking any orders.
+   * TODO: Sometimes, the script will exit with no errors before checking any orders.
    * This usually happends after I empty the db while testing someting else. 
    */

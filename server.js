@@ -5,6 +5,7 @@ const CONFIG = require('./config.js');
 const Order = require('./models/orders');
 
 const app = express();
+app.set('view engine', 'ejs');
 
 // parse requests
 app.use(bodyParser.urlencoded({extended: true}));
@@ -21,23 +22,15 @@ mongoose.connect(CONFIG.DB_URL, {
     process.exit();
 });
 
-// listen on chosen port
+// listen on the chosen port
 app.listen(CONFIG.serverPort, () => {
     console.log(`Server is listening on port ${CONFIG.serverPort}`);
 });
 
-// default route
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
-
-// Order.find().lean().exec((err, backorders) => {
-//     console.log(backorders);
-// });
-
 // pulling info from the database
 app.get('/', (req, res) => {
   Order.find().lean().exec((err, backorders) => {
-      // TODO
+      if(err) return console.log(err);
+      res.render('index.ejs', {backorders});
   });
 })
