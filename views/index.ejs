@@ -8,7 +8,7 @@
   <!-- <link rel="stylesheet" type="text/css" href="normalize.css"> -->
 </head>
 <body>
-  <h1>Backorder Report for <%= new Date().toString().slice(3, 15)%></h1>
+  <h1>Backorder Report for <%= new Date().toString().slice(3, 15) %></h1>
   <ul class="backorders">
     <% for(let i=0; i < backorders.length; i++) {%>
     <li class="order">
@@ -16,6 +16,7 @@
       <p>Order Number: <%= backorders[i].orderNumber %></p>
       <p>Upgraded?: <%= backorders[i].upgraded %></p>
       <p>Note from Hyundai: <%= backorders[i].details %></p>
+      <p>Last updated: <%= backorders[i].updatedAt.toString().slice(3, 15) %></p>
     </li>
     <% } %>
   </ul>
