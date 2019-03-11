@@ -7,11 +7,8 @@ const mongoose = require('mongoose');
 
 const HYUNDAI_DEALER_LOGIN =
 'https://wdcs.hyundaidealer.com/irj/portal/iam?TargetSYS_ID=SYS0000';
-const BACKORDER_PAGE =
-'https://wdcs.hyundaidealer.com/irj/portal/webdcs#/parts_backOrder_rdrSearch';
 const WEB_DCS =
 'https://www.hyundaidealer.com/_layouts/SSOSharepointSolution/SSORedirect.aspx?id=WEBDCS_allowCU_V2';
-
 const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/com.hma.webdcs.parts.backOrder.BackOrderSearchController?prtmode=getBackOrderSearch&VIEW=0&controlNo=&dealer=LA026&dealerCode=LA026&defaultView=true&fromdt=&fromdt400=&hmaNo=&invoiceno=&orderId=&orderNo=&orderStatus=&orderTyp=&part=&partNo=&pdcCode=&shipno=&todt=&todt400=';
 
 (async () => {
@@ -75,141 +72,36 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
    * This is probably the most complicated way to do this, but it works for now!
    * I may be able to do this without puppeteer.
    */
-  const jsonPath = './data/backorderData.txt'
   await page.goto(DATA_URL, { waitUntil: 'networkidle2'});
   const rawData = await page.content();
   await page.waitFor(3000);
-  fs.writeFileSync(jsonPath, rawData.slice(25, rawData.length -14));
-  console.log(`Backorder data saved to ${jsonPath}`);
+  fs.writeFileSync(CONFIG.jsonPath, rawData.slice(25, rawData.length -14));
+  console.log(`Backorder data saved to ${CONFIG.jsonPath}`);
 
-  const dataFile = fs.readFileSync(jsonPath);
-  const backorderData = JSON.parse(dataFile);
-  console.log(backorderData.result.retData.dataList[8].PART);
-
-  await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
-  await page.waitFor(3000);
-  await page.select('#gridlistbackorder_length > label > select', '100');
-
-  // Check total amount of backorders
-  console.log("Retrieving backorders...(This also takes a while. You'll be returned to the command prompt when it's done)");
-  const amountOfBackorders = await page.evaluate(() => {
-    const resultText = document.querySelector('#printAreaDiv > article > div > div > div > header > h1').innerText;
-    const resultNumber = Number(resultText.substring(16));
-
-    return resultNumber;
-  });
-
-  const PART_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(1) > span > span:nth-child(1)';
-  const ORDER_NUMBER_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(2) > span:nth-child(2)';
-  const XVOR_STATUS_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(13) > a';
-  const DETAILS_LINK_SELECTOR_PATH = '#gridlistbackorder > tbody > tr:nth-child(INDEX) > td:nth-child(9) > a';
-
-  for (let i = 1; i <= amountOfBackorders; i++) {
-    const orderNumberSelector = ORDER_NUMBER_SELECTOR_PATH.replace('INDEX', i);
-    const partNumberSelector = PART_NUMBER_SELECTOR_PATH.replace('INDEX', i);
-    const xvorStatusSelector = XVOR_STATUS_SELECTOR_PATH.replace('INDEX', i);
-    const detailsLinkSelector = DETAILS_LINK_SELECTOR_PATH.replace('INDEX', i);
-
-    /**
-     * 'storeIndicatorString' refers to the first two characters on the order
-     * number. H0 and H1 would mean the order originated from my store
-     * (the dealership), while anything else indicates the order was placed by
-     * our wholesale division or was forced out by Hyundai.
-     */
-    const orderNumbers = await page.evaluate((sel) => {
-      const storeIndicatorString = document.querySelector(sel).innerText;
-      const firstTwo = storeIndicatorString.substring(0, 2);
-
-      if(firstTwo === 'H0' || firstTwo === 'H1') {
-        return storeIndicatorString;
-      } else {
-        return 'Warehouse Order';
-      }
-    }, orderNumberSelector);
-
-    const partNumbers = await page.evaluate((sel) => {
-      const backorderedPart = document.querySelector(sel).innerText;
-      return backorderedPart;
-    }, partNumberSelector);
-
-    /**
-     * This is to check if a part is eligible to be upgraded to XVOR
-     * (eXpedite, Vehicle Off-road) and its upgrade status.
-     */
-    const xvorStatus = await page.evaluate((sel) => {
-      const statusIndicator = document.querySelector(sel);
-      let elementText = '';
-      (statusIndicator) ? elementText = statusIndicator.innerText : elementText = 'N/A';
-
-      if(elementText === 'XVOR') {
-        return 'Yes';
-      } else if(elementText === 'N/A') {
-        return 'N/A';
-      } else {
-        return 'No';
-      }
-    }, xvorStatusSelector);
-
-    const checkOrderDetails = await page.evaluate(async (sel) => {
-      const detailsIndicator = document.querySelector(sel);
-      const modalExit = document.querySelector('#parts_dialog_backorder_eta > div > div > div.modal-header > button > span');
-      /**
-       * The information we're after is located within a pop-up modal, so this
-       * block will click the details link, pull the needed info, then close
-       * the modal window.
-       */
-      if(detailsIndicator) {
-        detailsIndicator.click();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const detailsField = document.querySelector('#DataTables_Table_0 > tbody > tr > td.mn-width-200.data-align-left');
-        let etaDetails = '';
-
-        // Sometimes, the details field is empty, so this will account for that.
-        if(detailsField.innerText === '') {
-          etaDetails = 'NONE';
-        } else {
-          etaDetails = detailsField.innerText;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await modalExit.click();
-
-        return etaDetails;
-
-        /**
-         * If a details link doesn't exist, the function returns NONE and
-         * moves on.
-         */
-      } else {
-        return 'NONE';
-      }
-    }, detailsLinkSelector);
-
-    await page.waitFor(2000);
-
-    // Return only the information relevant to the report.
-    const relevantOrders = {
-      partNumber: partNumbers,
-      orderNumber: orderNumbers,
-      upgraded: xvorStatus,
-      details: checkOrderDetails,
-    };
-
-    if(relevantOrders.orderNumber !=='Warehouse Order') {
-      //console.log(relevantOrders);
-      upsertOrder({
-        partNumber: relevantOrders.partNumber,
-        orderNumber: relevantOrders.orderNumber,
-        upgraded: relevantOrders.upgraded,
-        details: relevantOrders.details,
-      });
-    }
-   }
+  //   if(relevantOrders.orderNumber !=='Warehouse Order') {
+  //     //console.log(relevantOrders);
+  //     upsertOrder({
+  //       partNumber: relevantOrders.partNumber,
+  //       orderNumber: relevantOrders.orderNumber,
+  //       upgraded: relevantOrders.upgraded,
+  //       details: relevantOrders.details,
+  //     });
+  //   }
+  // }
   // End session
   await browser.close();
   mongoose.connection.close();
 })();
+
+const dataFile = fs.readFileSync(CONFIG.jsonPath);
+const backorderData = JSON.parse(dataFile);
+// console.log(backorderData.result.retData.dataList[8].PART);
+
+const dataList = backorderData.result.retData.dataList;
+console.log(dataList[3].DLRO)
+
+// for (let i = 1; i <= dataList.length; i++) {
+//   const orderNumber = dataList[i].DLRO;
 
 function upsertOrder(orderObject) {
   //TODO: This should probably come from the server file
