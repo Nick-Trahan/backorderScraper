@@ -1,9 +1,7 @@
 const puppeteer = require('puppeteer');
 const CREDS = require('./creds');
 const CONFIG = require('./config.js');
-const Order = require('./models/orders');
 const fs = require('fs');
-const mongoose = require('mongoose');
 
 const HYUNDAI_DEALER_LOGIN =
 'https://wdcs.hyundaidealer.com/irj/portal/iam?TargetSYS_ID=SYS0000';
@@ -70,7 +68,7 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
    * than my previous method.
    *
    * This is probably the most complicated way to do this, but it works for now!
-   * I may be able to do this without puppeteer.
+   * I may be able to do this without puppeteer in the future.
    */
   await page.goto(DATA_URL, { waitUntil: 'networkidle2'});
   const rawData = await page.content();
@@ -78,44 +76,9 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
   fs.writeFileSync(CONFIG.jsonPath, rawData.slice(25, rawData.length -14));
   console.log(`Backorder data saved to ${CONFIG.jsonPath}`);
 
-  //   if(relevantOrders.orderNumber !=='Warehouse Order') {
-  //     //console.log(relevantOrders);
-  //     upsertOrder({
-  //       partNumber: relevantOrders.partNumber,
-  //       orderNumber: relevantOrders.orderNumber,
-  //       upgraded: relevantOrders.upgraded,
-  //       details: relevantOrders.details,
-  //     });
-  //   }
-  // }
   // End session
   await browser.close();
-  mongoose.connection.close();
 })();
-
-const dataFile = fs.readFileSync(CONFIG.jsonPath);
-const backorderData = JSON.parse(dataFile);
-// console.log(backorderData.result.retData.dataList[8].PART);
-
-const dataList = backorderData.result.retData.dataList;
-console.log(dataList[3].DLRO)
-
-// for (let i = 1; i <= dataList.length; i++) {
-//   const orderNumber = dataList[i].DLRO;
-
-function upsertOrder(orderObject) {
-  //TODO: This should probably come from the server file
-  if(mongoose.connection.readyState === 0) {
-    mongoose.connect(CONFIG.DB_URL, { useNewUrlParser: true, useFindAndModify: false });
-  }
-
-  const conditions = { partNumber: orderObject.partNumber, orderNumber: orderObject.orderNumber };
-  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-
-  Order.findOneAndUpdate(conditions, orderObject, options, (err, result) => {
-    if(err) throw err;
-  });
-}
 
 /**
  * Thanks to emadehsan (https://github.com/emadehsan) for writing such an
@@ -123,13 +86,12 @@ function upsertOrder(orderObject) {
  * https://github.com/emadehsan/thal/blob/master/README.md
  */
 
- /**
-  * https://zellwk.com/blog/crud-express-mongodb/
-  * https://www.zeptobook.com/how-to-create-restful-crud-api-with-node-js-mongodb-and-express-js/
-  */
+/**
+ * https://zellwk.com/blog/crud-express-mongodb/
+ * https://www.zeptobook.com/how-to-create-restful-crud-api-with-node-js-mongodb-and-express-js/
+ */
 
-  /**
-   * TODO: Sometimes, the script will exit with no errors before checking any
-   * orders. This usually happens after I empty the db while testing something
-   * else.
-   */
+/**
+ * TODO: Sometimes, the script will exit with no errors before checking any
+ * orders. I think this has something to do with expiring cookies.
+ */
