@@ -12,6 +12,8 @@ const BACKORDER_PAGE =
 const WEB_DCS =
 'https://www.hyundaidealer.com/_layouts/SSOSharepointSolution/SSORedirect.aspx?id=WEBDCS_allowCU_V2';
 
+const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/com.hma.webdcs.parts.backOrder.BackOrderSearchController?prtmode=getBackOrderSearch&VIEW=0&controlNo=&dealer=LA026&dealerCode=LA026&defaultView=true&fromdt=&fromdt400=&hmaNo=&invoiceno=&orderId=&orderNo=&orderStatus=&orderTyp=&part=&partNo=&pdcCode=&shipno=&todt=&todt400=';
+
 (async () => {
   // Initiate the Puppeteer browser
   const browser = await puppeteer.launch(/*{headless: false}*/);
@@ -65,9 +67,39 @@ const WEB_DCS =
   await page.goto(WEB_DCS, { waitUntil: 'networkidle2' });
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
   console.log('WebDCS loaded!');
+
+  /**
+   * TODO: This gets backorder info as a json file. Much simpler than my
+   * previous method. I probably don't even need puppeteer anymore!
+   * Too sleepy to try now. Future Nick, get on it!
+   *
+   * This is probably the most complicated way to do this, but it works for now!
+   */
+  await page.goto(DATA_URL, { waitUntil: 'networkidle2'});
+  const data = await page.content();
+  console.log(JSON.parse(data.slice(25, data.length -14)));
+
   await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
   await page.waitFor(3000);
   await page.select('#gridlistbackorder_length > label > select', '100');
+
+  // const testData = await page.evaluate ( () => {
+  //   const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/com.hma.webdcs.parts.backOrder.BackOrderSearchController?prtmode=getBackOrderSearch&VIEW=0&controlNo=&dealer=LA026&dealerCode=LA026&defaultView=true&fromdt=&fromdt400=&hmaNo=&invoiceno=&orderId=&orderNo=&orderStatus=&orderTyp=&part=&partNo=&pdcCode=&shipno=&todt=&todt400=';
+
+  //   const request = new XMLHttpRequest();
+
+  //   request.open('GET', DATA_URL);
+
+  //   request.responseType = 'json';
+  //   request.send();
+
+  //   request.onload = () => {
+  //     const backorderData = request.response;
+  //     return backorderData;
+  //   }
+  // });
+
+  // console.log(testData);
 
   // Check total amount of backorders
   console.log("Retrieving backorders...(This also takes a while. You'll be returned to the command prompt when it's done)");

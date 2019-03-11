@@ -10,7 +10,7 @@
 <body>
   <h1>Backorder Report for <%= new Date().toString().slice(3, 15) %></h1>
   <ul class="backorders">
-    <% for(let i=0; i < backorders.length; i++) {%>
+    <% for(let i=0; i < backorders.length; i++) { %>
     <li class="order">
       <p>Part Number: <%= backorders[i].partNumber %></p>
       <p>Order Number: <%= backorders[i].orderNumber %></p>
