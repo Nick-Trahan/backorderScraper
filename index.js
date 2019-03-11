@@ -69,37 +69,26 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
   console.log('WebDCS loaded!');
 
   /**
-   * TODO: This gets backorder info as a json file. Much simpler than my
-   * previous method. I probably don't even need puppeteer anymore!
-   * Too sleepy to try now. Future Nick, get on it!
+   * TODO: This gets backorder info as a json file. Much simpler and faster
+   * than my previous method.
    *
    * This is probably the most complicated way to do this, but it works for now!
+   * I may be able to do this without puppeteer.
    */
+  const jsonPath = './data/backorderData.txt'
   await page.goto(DATA_URL, { waitUntil: 'networkidle2'});
-  const data = await page.content();
-  console.log(JSON.parse(data.slice(25, data.length -14)));
+  const rawData = await page.content();
+  await page.waitFor(3000);
+  fs.writeFileSync(jsonPath, rawData.slice(25, rawData.length -14));
+  console.log(`Backorder data saved to ${jsonPath}`);
+
+  const dataFile = fs.readFileSync(jsonPath);
+  const backorderData = JSON.parse(dataFile);
+  console.log(backorderData.result.retData.dataList[8].PART);
 
   await page.goto(BACKORDER_PAGE, { waitUntil: 'networkidle2'});
   await page.waitFor(3000);
   await page.select('#gridlistbackorder_length > label > select', '100');
-
-  // const testData = await page.evaluate ( () => {
-  //   const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/com.hma.webdcs.parts.backOrder.BackOrderSearchController?prtmode=getBackOrderSearch&VIEW=0&controlNo=&dealer=LA026&dealerCode=LA026&defaultView=true&fromdt=&fromdt400=&hmaNo=&invoiceno=&orderId=&orderNo=&orderStatus=&orderTyp=&part=&partNo=&pdcCode=&shipno=&todt=&todt400=';
-
-  //   const request = new XMLHttpRequest();
-
-  //   request.open('GET', DATA_URL);
-
-  //   request.responseType = 'json';
-  //   request.send();
-
-  //   request.onload = () => {
-  //     const backorderData = request.response;
-  //     return backorderData;
-  //   }
-  // });
-
-  // console.log(testData);
 
   // Check total amount of backorders
   console.log("Retrieving backorders...(This also takes a while. You'll be returned to the command prompt when it's done)");
