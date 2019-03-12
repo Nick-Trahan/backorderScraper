@@ -8,10 +8,13 @@ const backorderData = JSON.parse(dataFile);
 
 // dataList is an array where each index is a different order
 const dataList = backorderData.result.retData.dataList;
+const partQuery = dataList[INDEX].PART.replace(' ', '+');
+const ETA_QUERY_URL = `https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/com.hma.webdcs.parts.backOrder.BackOrderSearchController?prtmode=getBackOrderETASearch&ADLO=${dataList[INDEX].ADLO}&APDC=${dataList[INDEX].APDC}&DLRO=${dataList[INDEX].DLRO}&KSFX=${dataList[INDEX].KSFX}&LINE=${dataList[INDEX].LINE}&LSFX=${dataList[INDEX].LSFX}&ORDC=${dataList[INDEX].ORDC}&PART=${partQuery}&PDCC=${dataList[INDEX].PDCC}&QTYB=${dataList[INDEX].QTYB}&dealer=LA026`
 
 for (let i = 0; i < dataList.length; i++) {
   const orderNumber = dataList[i].DLRO;
   const firstTwo = orderNumber.substring(0, 2);
+  const etaQuery = ETA_QUERY_URL.replace('INDEX', i);
 
   if(firstTwo === 'H0' || firstTwo === "H1") {
     let backOrder = {
