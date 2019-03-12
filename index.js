@@ -39,10 +39,9 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
 
   // Working with cookies
   // Reading cookies
-  const cookiesPath = './cookies/cookies.txt'
-  const previousSession = fs.existsSync(cookiesPath);
+  const previousSession = fs.existsSync(CONFIG.cookiesPath);
   if(previousSession) {
-    const content = fs.readFileSync(cookiesPath);
+    const content = fs.readFileSync(CONFIG.cookiesPath);
     const cookiesArr = JSON.parse(content);
     if(cookiesArr.length !== 0) {
       for (let cookie of cookiesArr) {
@@ -53,8 +52,8 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
   }
   // Writing cookies
   const cookies = await page.cookies();
-  fs.writeFileSync(cookiesPath, JSON.stringify(cookies));
-  console.log(`Session has been saved to ${cookiesPath}`);
+  fs.writeFileSync(CONFIG.cookiesPath, JSON.stringify(cookies));
+  console.log(`Session has been saved to ${CONFIG.cookiesPath}`);
 
   // Get to WebDCS and wait for it to load
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
