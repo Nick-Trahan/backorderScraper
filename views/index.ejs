@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.86,
         maximum-scale=3.0, minimum-scale=0.86, viewport-fit=cover">
   <title>AS Hyundai Backorders</title>
-  <!-- <link rel="stylesheet" type="text/css" href="normalize.css"> -->
+  <link rel="stylesheet" type="text/css" href="/public/assets/normalize.css">
 </head>
 <body>
   <h1>Backorder Report for <%= new Date().toString().slice(3, 15) %></h1>
@@ -16,10 +16,10 @@
       <p>Order Number: <%= backorders[i].orderNumber %></p>
       <p>Upgraded?: <%= backorders[i].upgraded %></p>
       <p>Note from Hyundai: <%= backorders[i].details %></p>
-      <p>Last updated: <%= backorders[i].updatedAt.toString().slice(3, 15) %></p>
+      <p id="<%= (backorders[i].updatedAt.toString().slice(3, 15) === new Date().toString().slice(3, 15)) ? 'lastUpdate': 'lastUpdateOld' %>">Last updated: <%= backorders[i].updatedAt.toString().slice(3, 15) %></p>
     </li>
     <% } %>
   </ul>
-  <!-- <script src="script.js"></script> -->
+  <!-- <script src="/public/assets/script.js"></script> -->
 </body>
 </html>

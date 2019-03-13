@@ -32,5 +32,6 @@ app.get('/', (req, res) => {
   Order.find().lean().exec((err, backorders) => {
       if(err) return console.log(err);
       res.render('index.ejs', {backorders});
+      app.use('/public', express.static('public'));
   });
 });
