@@ -1,7 +1,6 @@
 .DS_store
 .vscode/
 node_modules/
-cookies/cookies.txt
 creds.js
 notes.txt
 data/backorderData.txt
@@ -9,3 +8,5 @@ public/assets/fonts/HyundaiSansHead-Regular.woff
 public/assets/fonts/HyundaiSansHead-Regular.woff2
 public/assets/fonts/HyundaiSansText-Regular.woff
 public/assets/fonts/HyundaiSansText-Regular.woff2
+cookies/cookies0.txt
+cookies/cookies1.txt

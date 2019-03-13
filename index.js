@@ -39,9 +39,9 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
 
   // Working with cookies
   // Reading cookies
-  const previousSession = fs.existsSync(CONFIG.cookiesPath);
+  const previousSession = fs.existsSync(CONFIG.hdcCookiesPath);
   if(previousSession) {
-    const content = fs.readFileSync(CONFIG.cookiesPath);
+    const content = fs.readFileSync(CONFIG.hdcCookiesPath);
     const cookiesArr = JSON.parse(content);
     if(cookiesArr.length !== 0) {
       for (let cookie of cookiesArr) {
@@ -51,9 +51,9 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
     }
   }
   // Writing cookies
-  const cookies = await page.cookies();
-  fs.writeFileSync(CONFIG.cookiesPath, JSON.stringify(cookies));
-  console.log(`Session has been saved to ${CONFIG.cookiesPath}`);
+  const hdcCookies = await page.cookies();
+  fs.writeFileSync(CONFIG.hdcCookiesPath, JSON.stringify(hdcCookies));
+  console.log(`Log-in Session has been saved to ${CONFIG.hdcCookiesPath}`);
 
   // Get to WebDCS and wait for it to load
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
@@ -74,6 +74,10 @@ const DATA_URL = 'https://wdcs.hyundaidealer.com/irj/servlet/prt/portal/prtroot/
   await page.waitFor(3000);
   fs.writeFileSync(CONFIG.jsonPath, rawData.slice(25, rawData.length -14));
   console.log(`Backorder data saved to ${CONFIG.jsonPath}`);
+
+  const dcsCookies = await page.cookies();
+  fs.writeFileSync(CONFIG.dcsCookiesPath, JSON.stringify(dcsCookies));
+  console.log(`DCS Session has been saved to ${CONFIG.dcsCookiesPath}`);
 
   // End session
   await browser.close();
